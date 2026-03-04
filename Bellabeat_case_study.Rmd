@@ -1,0 +1,495 @@
+---
+title: "Bellabeat Case Study with R"
+author: "Andres Diaz"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# Ask Phase
+
+## Executive Summary
+
+This study analyzed smart device usage data to uncover behavioral and physiological trends associated with daily activity levels. By examining step count, heart rate, sleep efficiency, and metabolic intensity, the analysis aimed to identify actionable insights to inform Bellabeat’s marketing strategy.
+
+The results show that most users fall within low to moderate activity categories. Notably, individuals reaching at least 5,000 daily steps demonstrate lower resting heart rates and modest improvements in sleep efficiency compared to less active users. Higher activity levels are also associated with greater metabolic intensity, reinforcing the measurable health benefits of consistent movement.
+
+These findings reveal a strategic opportunity for Bellabeat to promote attainable activity milestones rather than exclusively emphasizing higher step targets. Positioning the 5,000-step threshold as a meaningful and realistic health benchmark can reduce psychological barriers and increase engagement. Additionally, behavioral segmentation by activity level enables more targeted communication strategies, while the underutilization of sleep tracking features highlights an opportunity to strengthen product adoption and holistic wellness messaging.
+
+By aligning marketing initiatives with evidence-based behavioral insights, Bellabeat can enhance customer motivation, improve feature engagement, and support long-term user retention.
+
+# Business Context
+
+## About the Company
+
+Urška Sršen and Sando Mur founded Bellabeat, a high-tech company that manufactures health-focused smart products. They create technology that informs and inspires women around the world. Collecting data on activity, sleep, stress, and reproductive health has allowed Bellabeat to empower women with knowledge about their own health and habits. Since it was founded in 2013, Bellabeat has grown rapidly and quickly positioned itself as a tech-driven wellness company for women.
+
+## Stakeholders
+
+-   **Urška Sršen** (Chief Creative Officer)
+
+-   **Sando Mur** (Co-founder)
+
+-   **Bellabeat Marketing Analytics Team**
+
+## Questions for analysis
+
+1.  What are some trends in smart device usage?
+2.  How could these trends apply to Bellabeat customers?
+3.  How could these trends help influence Bellabeat marketing strategy?
+
+## Business Task
+
+The objective of this analysis is to identify trends in smart device usage related to physical activity, heart rate, sleep, and metabolic intensity, and determine how these trends can inform Bellabeat’s marketing strategy.
+
+## Selected Product for Strategic Application
+
+For the purpose of this case study, the Bellabeat Membership platform has been selected as the primary product for strategic application.
+
+The Membership program provides users with personalized insights, behavioral tracking, and wellness guidance. Given that this analysis identifies distinct activity-based behavioral segments and measurable physiological differences associated with moderate increases in daily movement, these insights are especially relevant for a subscription-based digital wellness service.
+
+By applying behavioral segmentation and milestone-based motivation strategies, Bellabeat Membership can leverage data-driven marketing to enhance user engagement, retention, and long-term health adherence.
+
+## Hypothesis
+
+Schmidt et al. (1) demonstrated that individuals taking ≥5,000 steps per day had a substantially lower prevalence of adverse cardiometabolic health indicators compared to those taking fewer steps. Furthermore, individuals accumulating ≥12,500 steps per day showed the most favorable health profiles relative to lower activity levels.
+
+Heart rate is widely recognized as a relevant indicator of cardiovascular health, as it reflects how efficiently the heart and circulatory system respond to rest, physical activity, and recovery. When the cardiovascular system functions efficiently, the heart does not need to beat excessively fast to supply adequate oxygen to the body.
+
+Based on this evidence, the following hypothesis is proposed:
+
+Individuals who accumulate ≥5,000 steps per day will present lower average resting heart rates compared to those who accumulate fewer steps.
+
+Source: (1) Schmidt MD, Cleland VJ, Shaw K, et al. Cardiometabolic risk in younger and older adults across an index of ambulatory activity. Am J Prev Med. 2009;37:278–284. <doi:10.1016/j.amepre.2009.05.020>.
+
+## Preparing workspace
+
+The necessary packages will be installed for the processing, cleaning, analysis, and visualization of this study.
+
+```{r}
+library(tidyverse)
+```
+
+# Prepare Phase
+
+## Data importation and validation
+
+Before importing the datasets into RStudio, I reviewed the CSV files in Google Sheets to ensure they were correctly downloaded, properly formatted, and free of structural issues that could affect further processing, cleaning, analysis, or visualization.
+
+```{r}
+activity <- read.csv("data/dailyActivity_merged.csv")
+heart_rate <- read.csv("data/heartrate_seconds_merged.csv")
+sleep <- read.csv("data/sleepDay_merged.csv")
+intensity <- read.csv("data/minuteMETsNarrow_merged.csv")
+```
+
+To ensure data integrity, each dataset will be validated using the functions glimpse(), n_distinct(), and head() to confirm proper structure, consistency, and successful importation.
+
+```{r}
+
+glimpse(activity)
+head(activity)
+n_distinct(activity$Id)
+
+
+glimpse(heart_rate)
+head(heart_rate)
+n_distinct(heart_rate$Id)
+
+
+glimpse(intensity)
+head(intensity)
+n_distinct(intensity)
+
+
+glimpse(sleep)
+head(sleep)
+n_distinct(sleep)
+
+```
+## Data Source Description
+
+The dataset used in this study is the “FitBit Fitness Tracker Data” publicly available on Kaggle (CC0: Public Domain), originally made available through Mobius.
+
+The dataset contains personal fitness tracker data from 30 consenting Fitbit users. It includes minute-level and daily-level records covering:
+
+- Physical activity (steps and activity intensity)
+- Heart rate
+- Sleep monitoring
+- Metabolic equivalent (MET) values
+
+The data was collected over approximately a 30-day period in 2016.
+
+This dataset was selected because it provides multi-dimensional behavioral and physiological indicators that allow analysis of smart device usage patterns aligned with the objectives of this case study.
+
+Source:
+Kaggle Dataset – FitBit Fitness Tracker Data (CC0: Public Domain)
+https://www.kaggle.com/datasets/arashnic/fitbit
+
+
+## Data credibility and Limitations
+
+### Data Credibility
+
+The dataset used in this analysis was obtained from Kaggle and contains daily smart device usage data from 30 users over a 30-day period. While the dataset provides valuable behavioral and physiological indicators (steps, heart rate, sleep, and metabolic intensity), several limitations must be acknowledged.
+
+### Limitations
+
+This analysis presents several methodological and data-related limitations that must be considered when interpreting the results:
+
+-   **Resting heart rate approximation:** The minimum daily heart rate was used as a proxy for resting heart rate. While conservative, this does not guarantee that the measurement occurred under true resting physiological conditions.
+
+-   **Short observation window:** The dataset covers approximately 30 days. Long-term behavioral patterns and seasonal effects cannot be evaluated.
+
+-   **Missing sleep records:** Sleep data is incomplete for many users. This may reflect device non-use rather than absence of sleep behavior, potentially biasing sleep-related conclusions.
+
+-   **Sample representativeness:** The dataset does not include demographic variables such as age, region, or socioeconomic background. Therefore, findings cannot be generalized to the broader population of women, Bellabeat’s target market.
+
+-   **Observational nature:** The analysis identifies associations but does not establish causality between step count and improved health indicators.
+
+### ROCCC Evaluation
+
+|                   |                                                      |
+|-------------------|------------------------------------------------------|
+| **Reliable**      | Limited reliability due to small sample size         |
+| **Original**      | Third-party source (via Kaggle)                      |
+| **Comprehensive** | Covers activity and sleep but lacks demographic data |
+| **Current**       | Data collected in 2016                               |
+| **Cited**         | Publicly available dataset on Kaggle                 |
+
+# Process Phase
+
+## Data Cleaning and Transformation Documentation
+
+To ensure analytical accuracy and consistency, several data cleaning and transformation steps were conducted before performing the analysis.
+
+First, all date and time variables were standardized into appropriate Date and POSIXct formats to enable accurate daily aggregation and correct table joins.
+
+Second, minute-level datasets (heart rate and METs) were aggregated to daily-level summaries using grouped calculations. This ensured consistency across datasets and allowed meaningful comparisons between daily activity, heart rate, sleep, and metabolic intensity.
+
+Third, missing values generated after joining the datasets were preserved when using left_join(), as the activity table was selected as the primary reference. This approach maintains all recorded activity entries while acknowledging that some physiological or sleep data may be unavailable due to device non-use.
+
+When calculating summary statistics, NA values were handled using na.rm = TRUE to prevent distortions in mean calculations.
+
+Finally, derived variables were created to support strategic segmentation, including step_group classification based on daily step thresholds (<5,000; 5,000–9,999; ≥10,000 steps). This segmentation was central to answering the business questions and testing the study hypothesis.
+
+## Standardizing Date Formats
+
+First we convert the date columns to Date format.
+
+```{r}
+activity$ActivityDate <- as.Date(activity$ActivityDate, format="%m/%d/%Y")
+
+heart_rate$Time <- as.POSIXct(heart_rate$Time, format="%m/%d/%Y %H:%M:%S")
+heart_rate$Date <- as.Date(heart_rate$Time)
+
+sleep$SleepDay <- as.POSIXct(sleep$SleepDay, format="%m/%d/%Y %H:%M:%S")
+sleep$Date <- as.Date(sleep$SleepDay)
+
+intensity$ActivityMinute <- as.POSIXct(intensity$ActivityMinute, format="%m/%d/%Y %H:%M:%S")
+intensity$Date <- as.Date(intensity$ActivityMinute)
+```
+
+## Daily Heart Rate Aggregation
+
+```{r}
+heart_daily <- heart_rate %>%
+  group_by(Id, Date) %>%
+  summarise(
+    avg_hr = mean(Value, na.rm = TRUE),
+    min_hr = min(Value, na.rm = TRUE)
+  )
+
+```
+
+The minimum daily heart rate is used as a conservative approximation of resting heart rate. Although this does not represent a clinically controlled resting measurement, it provides a reasonable behavioral proxy within the constraints of the dataset.
+
+## Daily METs Aggregation
+
+```{r}
+mets_daily <- intensity %>%
+  group_by(Id, Date) %>%
+  summarise(
+    avg_mets = mean(METs, na.rm = TRUE),
+    total_mets = sum(METs, na.rm = TRUE)
+  )
+
+```
+
+## Daily Sleep Preparation
+
+```{r}
+sleep_daily <- sleep %>%
+  group_by(Id, Date) %>%
+  summarise(
+    total_minutes_asleep = mean(TotalMinutesAsleep, na.rm = TRUE),
+    total_time_in_bed = mean(TotalTimeInBed, na.rm = TRUE),
+    sleep_efficiency = total_minutes_asleep / total_time_in_bed
+  )
+
+```
+
+##Joining Tables
+
+The necessary tables from the database will be joined in order to obtain the corresponding information for each user represented in the activity table, which will be used as the primary dataset. To accomplish this, functions such as left_join() from the dplyr package will be used to merge the datasets based on a common key (user_id). This approach ensures that all users contained in the primary table are preserved while integrating relevant variables from the additional tables.
+
+```{r}
+final_dataset <- activity %>%
+  left_join(heart_daily, by = c("Id" = "Id", "ActivityDate" = "Date")) %>%
+  left_join(mets_daily, by = c("Id" = "Id", "ActivityDate" = "Date")) %>%
+  left_join(sleep_daily, by = c("Id" = "Id", "ActivityDate" = "Date"))
+
+```
+
+This gives us a complete daily user profile.
+
+## Strategic variables to answer the questions of the case.
+
+### Step Classification
+
+```{r}
+final_dataset <- final_dataset %>%
+  mutate(step_group = case_when(
+    TotalSteps < 5000 ~ "Low Active",
+    TotalSteps >= 5000 & TotalSteps < 10000 ~ "Moderately Active",
+    TotalSteps >= 10000 ~ "Highly Active"
+  ))
+
+```
+
+# Analyze Phase
+
+## Trend 1: Distribution of activity level
+
+```{r}
+final_dataset %>% 
+  count(step_group)
+```
+
+This shows how users are distributed according to activity level.
+
+## Trend 2: Steps vs Resting Heart Rate
+
+```{r}
+final_dataset %>% 
+  group_by(step_group) %>%
+  summarise(avg_resting_hr = mean(min_hr, na.rm = TRUE))
+```
+
+Here we evaluate if the group ≥5,000 steps shows lower heart rate.
+
+## Trend 3: Sleep Patterns by Activity Level
+
+```{r}
+final_dataset %>%
+  group_by(step_group) %>%
+  summarise(avg_sleep = mean(total_minutes_asleep, na.rm = TRUE))
+```
+
+## Trend 4: MET Intensity by Activity Level
+
+```{r}
+final_dataset %>%
+  group_by(step_group) %>%
+  summarise(avg_mets = mean(avg_mets, na.rm = TRUE))
+```
+
+# Share Phase
+
+## Key Insights Through Data Visualization
+
+### Trend 1- Distribution of activity levels
+
+```{r}
+ggplot(final_dataset, aes(x = step_group, fill = step_group)) +
+  geom_bar(width = 0.6) +
+  scale_fill_manual(values = c(
+    "Low Active" = "#D73027",
+    "Moderately Active" = "#FDAE61",
+    "Highly Active" = "#1A9850"
+  )) +
+  labs(
+    title = "Most Users Do Not Reach High Daily Step Levels",
+    subtitle = "Distribution of users based on daily step count categories",
+    x = "Activity Level",
+    y = "Number of Daily Records"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    plot.title = element_text(size = 16, face = "bold"),
+    plot.subtitle = element_text(size = 12),
+    axis.text = element_text(size = 11)
+  )
+```
+
+### Trend 2- Steps vs Resting Heart Rate
+
+```{r}
+ggplot(final_dataset, aes(x = TotalSteps, y = min_hr)) +
+  geom_point(alpha = 0.3, color = "#2C3E50") +
+  geom_smooth(method = "lm", color = "#1A9850", se = FALSE, linewidth = 1.2) +
+  labs(
+    title = "Higher Daily Steps Associated with Lower Resting Heart Rate",
+    subtitle = "Trend line shows inverse relationship between activity and cardiovascular efficiency",
+    x = "Total Daily Steps",
+    y = "Resting Heart Rate (Approx. Min HR)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    plot.subtitle = element_text(size = 12)
+  )
+
+```
+
+```{r}
+cor(final_dataset$TotalSteps, final_dataset$min_hr, use = "complete.obs")
+```
+
+#### Statistical Validation
+
+To support the visual trend observed in the scatter plot, a correlation test was conducted between total daily steps and minimum heart rate. The results indicate a negative correlation, suggesting that higher daily step counts are modestly associated with lower minimum heart rates. While this analysis is exploratory and does not establish causation, it provides quantitative support for the observed inverse relationship.
+
+### Trend 3- Sleep Patterns by Activity Level
+
+```{r}
+ggplot(final_dataset, aes(x = step_group, y = sleep_efficiency, fill = step_group)) +
+  stat_summary(fun = mean, geom = "bar", width = 0.6) +
+  stat_summary(fun = mean, geom = "text", 
+               aes(label = round(after_stat(y), 2)), 
+               vjust = -0.5) +
+  scale_fill_manual(values = c(
+    "Low Active" = "#D73027",
+    "Moderately Active" = "#FDAE61",
+    "Highly Active" = "#1A9850"
+  )) +
+  labs(
+    title = "Average Sleep Efficiency by Activity Level",
+    subtitle = "More active users show slightly higher average sleep efficiency",
+    x = "Activity Level",
+    y = "Average Sleep Efficiency"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    plot.title = element_text(size = 16, face = "bold")
+  )
+
+
+```
+
+### Trend 4- Metabolic intensity by activity level
+
+```{r}
+ggplot(final_dataset, aes(x = step_group, y = avg_mets, fill = step_group)) +
+  stat_summary(fun = mean, geom = "bar", width = 0.6) +
+  stat_summary(fun = mean, geom = "text", 
+               aes(label = round(after_stat(y), 2)), 
+               vjust = -0.5) +
+  scale_fill_manual(values = c(
+    "Low Active" = "#D73027",
+    "Moderately Active" = "#FDAE61",
+    "Highly Active" = "#1A9850"
+  )) +
+  labs(
+    title = "Highly Active Users Exhibit Greater Metabolic Intensity",
+    subtitle = "Average METs by activity level",
+    x = "Activity Level",
+    y = "Average METs"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    plot.title = element_text(size = 16, face = "bold")
+  )
+
+```
+
+# Act Phase
+
+## Key Findings
+
+Based on the analysis of key health-related variables (including daily physical activity, heart rate, sleep efficiency, and metabolic intensity) several meaningful trends were identified:
+
+-   Most users fall into the Low or Moderately Active categories.
+-   Users accumulating ≥5,000 daily steps tend to show lower resting heart rates.
+-   Higher activity levels are associated with slightly better sleep efficiency.
+-   Highly active users demonstrate greater metabolic intensity (METs).
+
+The analysis confirms that moderate increases in daily movement are associated with measurable improvements in cardiovascular indicators, suggesting a strong opportunity for behavior-based marketing strategies.
+
+From a behavioral standpoint, smart device usage reveals that:
+
+-   Not all users consistently track sleep.
+-   Activity tracking is more consistently recorded than sleep or heart rate.
+-   There is a clear segmentation opportunity based on activity level.
+
+The overall conclusion is that smart device users show measurable health-related differences based on daily step count, and moderate increases in activity (≥5,000 steps) already correspond to improved health indicators.
+
+## Top Three Strategic Recommendations
+
+Based on the findings of this analysis, the following three high-level recommendations are proposed for Bellabeat:
+
+### 1. Promote the 5,000-Step Milestone as an Achievable Health Benchmark
+
+The analysis indicates that users who accumulate at least 5,000 daily steps demonstrate measurable improvements in cardiovascular indicators. Rather than focusing exclusively on the 10,000-step benchmark, Bellabeat should position 5,000 steps as a realistic and meaningful entry-level goal.
+
+This strategy reduces psychological barriers, increases motivation among low-active users, and supports sustainable behavior change.
+
+---
+
+### 2. Implement Activity-Based Behavioral Segmentation
+
+Users clearly cluster into three behavioral segments: Low Active, Moderately Active, and Highly Active. Bellabeat should leverage this segmentation to tailor:
+
+- Email marketing campaigns  
+- In-app notifications  
+- Membership content personalization  
+- Performance messaging  
+
+Segment-based communication increases relevance and improves engagement and retention.
+
+---
+
+### 3. Strengthen Sleep Feature Engagement within the Membership Platform
+
+Sleep data shows inconsistent tracking behavior across users. This suggests underutilization of sleep-related features.
+
+Bellabeat should:
+- Improve onboarding education regarding sleep tracking benefits  
+- Integrate sleep insights more prominently within the Membership experience  
+- Develop marketing campaigns emphasizing the connection between movement, recovery, and overall wellness  
+
+Reinforcing holistic wellness positioning differentiates Bellabeat from step-count–focused competitors.
+
+## Business application
+
+Bellabeat can apply these findings by:
+
+-   Adjusting marketing messaging to emphasize attainable health improvements.
+-   Designing feature nudges based on user activity segments.
+-   Highlighting sleep and recovery as differentiators.
+-   Building behavioral campaigns centered around incremental improvement.
+
+This aligns product capabilities with real user behavior patterns.
+
+## Next Steps
+
+-   Conduct deeper statistical testing on step thresholds (5k vs 10k vs 12.5k).
+-   Analyze weekday vs weekend behavior differences.
+-   Measure retention rates by activity segment.
+-   Test marketing A/B campaigns emphasizing 5,000-step milestones.
+-   Develop predictive modeling to identify users at risk of disengagement.
+
+## Additional Data to Strengthen Findings
+
+To expand this analysis, the following data would be valuable:
+
+-   User demographics (age, region).
+-   Device usage frequency.
+-   App engagement metrics.
+-   Stress level tracking.
+-   Reproductive health tracking data (core Bellabeat differentiator).
+-   Longitudinal data beyond 30 days.
+
+This would allow deeper behavioral modeling and more precise segmentation.
