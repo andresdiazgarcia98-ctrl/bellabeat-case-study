@@ -365,7 +365,7 @@ ggplot(final_dataset, aes(x = step_group, y = sleep_efficiency, fill = step_grou
   )) +
   labs(
     title = "Average Sleep Efficiency by Activity Level",
-    subtitle = "More active users show slightly higher average sleep efficiency",
+    subtitle = "Sleep efficiency similar across activity levels, slightly higher in low activity.",
     x = "Activity Level",
     y = "Average Sleep Efficiency"
   ) +
@@ -377,6 +377,8 @@ ggplot(final_dataset, aes(x = step_group, y = sleep_efficiency, fill = step_grou
 
 
 ```
+Sleep data reveals inconsistent tracking behavior across users. While physical activity metrics such as daily steps are recorded consistently, sleep tracking appears far less frequent in the dataset. This suggests that many users may not be regularly using the sleep monitoring features of their devices. Such underutilization could indicate barriers such as lack of awareness, limited engagement with sleep-related functionalities, or inconvenience in activating sleep tracking. From a product perspective, this highlights a potential opportunity to improve user education, feature visibility, or automated tracking capabilities to encourage more consistent use of sleep monitoring tools.
+
 
 ### Trend 4- Metabolic intensity by activity level
 
